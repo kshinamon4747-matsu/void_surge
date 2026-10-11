@@ -470,20 +470,19 @@
     if(style===3)updateSweepAttack(enemy,dt);
   }
 
-  function usesReducedEndlessRifleBossFire(enemy){
-    return state.mode==='endless'&&state.stats.weapon==='rifle'&&enemy.type==='boss'&&(enemy.bossStage===1||enemy.bossStage===2);
+  function usesReducedRifleSpiralFire(enemy){
+    return state.stats.weapon==='rifle'&&(enemy.type==='finalBoss'||enemy.type==='boss'&&(enemy.bossStage===1||enemy.bossStage===2));
   }
 
   function fireSpiralBarrage(enemy){
-    const final=enemy.type==='finalBoss',firstBoss=enemy.type==='boss'&&enemy.bossStage===1,count=firstBoss||usesReducedEndlessRifleBossFire(enemy)?5:final?10:8,speed=final?145:126,base=enemy.spiralAngle;
+    const final=enemy.type==='finalBoss',firstBoss=enemy.type==='boss'&&enemy.bossStage===1,count=usesReducedRifleSpiralFire(enemy)?(final?5:4):firstBoss?5:final?10:8,speed=final?145:126,base=enemy.spiralAngle;
     enemy.spiralAngle+=enemy.orbitDirection*(final?.27:.34);
     for(let i=0;i<count;i++){const a=base+i/count*Math.PI*2,turn=enemy.orbitDirection*(.42+(i%2)*.08);state.enemyBullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:final?6:5,turn,fromBoss:true,dead:false})}
   }
 
   function fireAimedBurst(enemy){
     const base=Math.atan2(state.player.y-enemy.y,state.player.x-enemy.x),speed=235;
-    const spreads=usesReducedEndlessRifleBossFire(enemy)?[-.1,.1]:[-.14,0,.14];
-    for(const spread of spreads){const a=base+spread;state.enemyBullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:7,turn:0,fromBoss:true,highPower:true,uncancellable:true,damage:8,coreDamage:7,dead:false})}
+    for(const spread of[-.14,0,.14]){const a=base+spread;state.enemyBullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:7,turn:0,fromBoss:true,highPower:true,uncancellable:true,damage:8,coreDamage:7,dead:false})}
     tone(145,.22,.045,'sawtooth');
   }
 
