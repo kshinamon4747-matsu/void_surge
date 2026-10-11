@@ -30,7 +30,7 @@
   const speedState = $('#speedState');
 
   const W = canvas.width, H = canvas.height, CX = W / 2, CY = H / 2;
-  const UPGRADE_TIME = 30, BOSS_INTERVAL = 60, FINAL_BOSS_TIME = 300, ENDLESS_NORMAL_TIME = 60, MAX_UPGRADE_LEVEL = 3, TURRET_RANGE = 96, ENEMY_DURABILITY = 1.5, BOSS_DURABILITY = 2, AIMED_BURST_INTERVAL = 2.5, LASER_SPECIAL_CHARGE_TIME = 2, LASER_SPECIAL_MIN = .4, LASER_SPECIAL_FUEL = 20, LASER_SPECIAL_COOLDOWN = 3, STEP = 1 / 60, STORAGE_KEY = 'soloWardBest', ENDLESS_TIME_KEY = 'soloWardEndlessTime', ENDLESS_KILLS_KEY = 'soloWardEndlessKills', ENDLESS_BOSSES_KEY = 'soloWardEndlessBosses';
+  const UPGRADE_TIME = 30, BOSS_INTERVAL = 60, FINAL_BOSS_TIME = 300, ENDLESS_NORMAL_TIME = 60, BOSS_BULLET_LIFETIME = 8, MAX_UPGRADE_LEVEL = 3, TURRET_RANGE = 96, ENEMY_DURABILITY = 1.5, BOSS_DURABILITY = 2, AIMED_BURST_INTERVAL = 2.5, LASER_SPECIAL_CHARGE_TIME = 2, LASER_SPECIAL_MIN = .4, LASER_SPECIAL_FUEL = 20, LASER_SPECIAL_COOLDOWN = 3, STEP = 1 / 60, STORAGE_KEY = 'soloWardBest', ENDLESS_TIME_KEY = 'soloWardEndlessTime', ENDLESS_KILLS_KEY = 'soloWardEndlessKills', ENDLESS_BOSSES_KEY = 'soloWardEndlessBosses';
   const keys = new Set();
   const touchMove = { x: 0, y: 0 };
   const takenUnique = new Set();
@@ -436,6 +436,7 @@
       else if (dist(enemy,s.player)<enemy.r+s.player.r && s.player.inv<=0) { s.player.inv=1; const push=Math.atan2(s.player.y-enemy.y,s.player.x-enemy.x); s.player.x=clamp(s.player.x+Math.cos(push)*45,18,W-18); s.player.y=clamp(s.player.y+Math.sin(push)*45,18,H-18); damageCore(3); }
     }
     for (const bullet of s.enemyBullets) {
+      if(bullet.life!==undefined){bullet.life-=dt;if(bullet.life<=0){bullet.dead=true;continue}}
       if (bullet.turn) { const speed=Math.hypot(bullet.vx,bullet.vy),a=Math.atan2(bullet.vy,bullet.vx)+bullet.turn*dt;bullet.vx=Math.cos(a)*speed;bullet.vy=Math.sin(a)*speed; }
       bullet.x+=bullet.vx*dt; bullet.y+=bullet.vy*dt;
       if (!bullet.dead && dist(bullet,s.player)<bullet.r+s.player.r && s.player.inv<=0) { bullet.dead=true; s.player.inv=1; damageCore(bullet.damage??3); }
@@ -477,12 +478,12 @@
   function fireSpiralBarrage(enemy){
     const final=enemy.type==='finalBoss',firstBoss=enemy.type==='boss'&&enemy.bossStage===1,count=usesReducedRifleSpiralFire(enemy)?(final?5:4):firstBoss?5:final?10:8,speed=final?145:126,base=enemy.spiralAngle;
     enemy.spiralAngle+=enemy.orbitDirection*(final?.27:.34);
-    for(let i=0;i<count;i++){const a=base+i/count*Math.PI*2,turn=enemy.orbitDirection*(.42+(i%2)*.08);state.enemyBullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:final?6:5,turn,fromBoss:true,dead:false})}
+    for(let i=0;i<count;i++){const a=base+i/count*Math.PI*2,turn=enemy.orbitDirection*(.42+(i%2)*.08);state.enemyBullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:final?6:5,turn,fromBoss:true,life:BOSS_BULLET_LIFETIME,dead:false})}
   }
 
   function fireAimedBurst(enemy){
     const base=Math.atan2(state.player.y-enemy.y,state.player.x-enemy.x),speed=235;
-    for(const spread of[-.14,0,.14]){const a=base+spread;state.enemyBullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:7,turn:0,fromBoss:true,highPower:true,uncancellable:true,damage:8,coreDamage:7,dead:false})}
+    for(const spread of[-.14,0,.14]){const a=base+spread;state.enemyBullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:7,turn:0,fromBoss:true,highPower:true,uncancellable:true,damage:8,coreDamage:7,life:BOSS_BULLET_LIFETIME,dead:false})}
     tone(145,.22,.045,'sawtooth');
   }
 
