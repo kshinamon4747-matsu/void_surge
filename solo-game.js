@@ -1,6 +1,6 @@
-import { GAME_CONFIG, STORAGE_KEYS, WEAPONS } from './game-config.js?v=79';
-import { UPGRADES } from './game-upgrades.js?v=79';
-import { clamp, dist, rand } from './game-utils.js?v=79';
+import { GAME_CONFIG, STORAGE_KEYS, WEAPONS } from './game-config.js?v=80';
+import { UPGRADES } from './game-upgrades.js?v=80';
+import { clamp, dist, rand } from './game-utils.js?v=80';
 
 (() => {
   'use strict';
