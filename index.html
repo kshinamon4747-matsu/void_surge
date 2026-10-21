@@ -5,72 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
   <meta name="theme-color" content="#080b17" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="5分間を生き残り、最終ボスを撃破する防衛アクションゲーム" />
+  <meta name="description" content="通常防衛、エンドレス、6機で戦うバトルロイヤルを遊べるアクションゲーム" />
   <title>SOLO//WARD — 単独防衛線</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="icon-core-turret-v2-192.png" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=79" />
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
       <div class="brand"><span>SOLO</span>//WARD</div>
-      <div class="top-stats" aria-label="記録">
-        <span>BEST <b id="bestScore">0</b></span>
+      <div class="top-stats" aria-label="記録と設定">
+        <span id="bestStat">BEST KILLS <b id="bestScore">0</b></span>
         <button id="soundButton" class="icon-button" type="button" aria-label="効果音を切り替える">SOUND ON</button>
       </div>
     </header>
+
     <section class="game-wrap" aria-label="単独防衛線">
       <canvas id="game" width="960" height="640" aria-label="ゲーム画面"></canvas>
+
       <div id="overlay" class="overlay">
         <div class="panel intro-panel">
           <p class="eyebrow">SOLO DEFENSE PROTOCOL</p>
           <h1 id="overlayTitle">敵機を撃ち抜き、<br><em>コアを守れ。</em></h1>
-          <p id="overlayText" class="lead">敵と敵弾の両方へ自動照準。30秒ごとに装備を強化し、激しくなる攻撃を5分間耐え抜いて最終ボスを撃破しよう。</p>
-          <div id="modeSelect" class="mode-select" role="radiogroup" aria-label="ゲームモード">
-            <button class="mode-card selected" type="button" data-mode="normal" aria-pressed="true"><strong>通常モード</strong><small>5分後の最終ボス撃破を目指す</small></button>
-            <button class="mode-card" type="button" data-mode="endless" aria-pressed="false"><strong>エンドレスモード</strong><small>ボス編隊を越えて限界まで防衛</small></button>
+          <p id="overlayText" class="lead">照準を自分で操り、敵と敵弾を撃ち抜こう。30秒ごとに装備を強化し、激しくなる攻撃を5分間耐え抜いて最終ボスを撃破しよう。</p>
+
+          <div id="modeSelect" class="mode-select" role="group" aria-label="ゲームモード">
+            <button class="mode-card selected" type="button" data-mode="normal" aria-pressed="true"><strong>通常防衛</strong><small>5分後の最終ボスを撃破</small></button>
+            <button class="mode-card" type="button" data-mode="endless" aria-pressed="false"><strong>エンドレス</strong><small>ボス編隊の先へ挑戦</small></button>
+            <button class="mode-card" type="button" data-mode="battle" aria-pressed="false"><strong>バトルロイヤル</strong><small>6機で戦い最後まで生き残る</small></button>
           </div>
-          <div id="weaponSelect" class="weapon-select" role="radiogroup" aria-label="開始武器">
-            <button class="weapon-card selected" type="button" data-weapon="rifle" aria-pressed="true"><strong>標準銃</strong><small>威力と連射のバランス型</small></button>
+
+          <div id="weaponSelect" class="weapon-select" role="group" aria-label="開始武器">
+            <button class="weapon-card selected" type="button" data-weapon="rifle" aria-pressed="true"><strong>標準銃</strong><small>高威力・貫通・迎撃に強い</small></button>
             <button class="weapon-card" type="button" data-weapon="machinegun" aria-pressed="false"><strong>マシンガン</strong><small>低威力・高速連射</small></button>
-            <button class="weapon-card" type="button" data-weapon="laser" aria-pressed="false"><strong>レーザー</strong><small>敵を貫通する照射＋チャージ砲</small></button>
+            <button class="weapon-card" type="button" data-weapon="laser" aria-pressed="false"><strong>レーザー</strong><small>溜め攻撃を持つ瞬間照射</small></button>
           </div>
+
           <button id="autoFireToggle" class="auto-toggle" type="button" aria-pressed="false"><span>AUTO FIRE</span><strong id="autoFireState">OFF</strong></button>
           <button id="speedToggle" class="auto-toggle" type="button" aria-pressed="false"><span>2× SPEED</span><strong id="speedState">OFF</strong></button>
           <button id="startButton" class="primary" type="button">防衛を開始</button>
-          <button id="restartButton" class="restart-button" type="button" hidden>最初から</button>
+          <button id="restartButton" class="restart-button" type="button" hidden>最初からやり直す</button>
+
           <div class="howto">
             <span><kbd>WASD</kbd><kbd>↑↓←→</kbd> 移動</span>
-            <span><kbd>SPACE</kbd> 最寄りの敵へ射撃</span>
-            <span><kbd>SHIFT</kbd> レーザー必殺技をチャージ</span>
+            <span><kbd>MOUSE</kbd> 照準・クリック射撃</span>
+            <span><kbd>SPACE</kbd> 照準方向へ射撃</span>
+            <span><kbd>SHIFT</kbd> レーザー溜め攻撃</span>
             <span><kbd>ESC</kbd> ポーズ</span>
           </div>
         </div>
       </div>
+
       <div id="upgradeOverlay" class="overlay hidden" aria-live="polite">
         <div class="panel upgrade-panel">
           <p id="upgradeEyebrow" class="eyebrow">30 SECONDS SURVIVED</p>
           <h2 id="upgradeTitle">装備を強化</h2>
           <p id="loopResult" class="lead"></p>
           <div id="upgradeChoices" class="upgrade-grid"></div>
-          <button id="skipUpgradeButton" class="skip-upgrade" type="button"><strong>コアを15回復</strong></button>
+          <button id="skipUpgradeButton" class="skip-upgrade" type="button"><strong>修復を選ぶ</strong><small>強化を見送り、コア耐久を15回復</small></button>
           <p class="key-hint">数字キー 1–3 でも選択できます</p>
         </div>
       </div>
+
       <div id="touchControls" class="touch-controls" aria-hidden="true">
         <div id="joystick" class="joystick"><div id="stick" class="stick"></div></div>
         <button id="specialButton" class="special-button" type="button" hidden>CHARGE</button>
-        <button id="fireButton" class="fire-button" type="button">FIRE</button>
+        <div id="fireButton" class="aim-joystick" aria-label="照準と射撃">
+          <div id="aimStick" class="aim-stick"></div>
+          <span>AIM / FIRE</span>
+        </div>
       </div>
     </section>
+
     <footer>
       <span>UPGRADE / EVERY 30 SEC</span><span>ENEMIES INCREASE OVER TIME</span><span>FINAL BOSS / 05:00</span>
     </footer>
   </main>
-  <script src="solo-game.js"></script>
+
+  <script type="module" src="solo-game.js?v=79"></script>
   <script>
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
